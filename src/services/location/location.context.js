@@ -16,7 +16,8 @@ export const LocationContextProvider = ({ children }) => {
   };
 
   // es recomendable que el contexto utilice el useEffect al actualizar su estado, en lugar de llamar la función
-  // onSearch 
+  // onSearch directamente desde el search component y que onSearch haga la request directamente, es mejor que llame a
+  // setKeyword y useEffect se dispare cuando keyword cambie su valor.
   useEffect(() => {
     if (!keyword.length) {
       // don't do anything
