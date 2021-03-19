@@ -1,12 +1,14 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import styled from 'styled-components/native';
-import { FlatList } from 'react-native';
+import { FlatList, TouchableOpacity } from 'react-native';
 import { ActivityIndicator, Colors } from 'react-native-paper';
-import { RestaurantInfoCard } from '../componens/restaurants-info-card.component';
+import { RestaurantInfoCard } from '../components/restaurants-info-card.component';
 import { Spacer } from '../../../components/spacer/spacer.component';
+import { FavouritesBar } from '../../../components/favourites/favourites-bar.component';
 import { SafeArea } from '../../../components/utility/safe-area.component';
+import { Search } from '../components/search.component';
 import { RestaurantsContext } from '../../../services/restaurants/restaurants.context';
-import { Search } from '../componens/search.component';
+import { FavouritesContext } from '../../../services/favourites/favourites.context';
 
 const RestaurantList = styled(FlatList).attrs({
   contentContainerStyle: {
@@ -24,8 +26,12 @@ const LoadingContainer = styled.View`
   left: 50%;
 `;
 
-export const RestaurantScreen = () => {
-  const { isLoading, error, restaurants } = useContext(RestaurantsContext);
+// all components inside a Navigator has the navigation props.
+export const RestaurantsScreen = ({ navigation }) => {
+  const { isLoading, restaurants } = useContext(RestaurantsContext);
+  const { favourites } = useContext(FavouritesContext);
+  const [isToggled, setIsToggled] = useState(false);
+  console.log(favourites);
 
   if (isLoading) {
     return (
@@ -37,14 +43,33 @@ export const RestaurantScreen = () => {
 
   return (
     <SafeArea>
-      <Search />
+      <Search
+        isFavouritesToggled={isToggled}
+        onFavouritesToggle={() => setIsToggled(!isToggled)}
+      />
+      {isToggled && (
+        <FavouritesBar
+          favourites={favourites}
+          onNavigate={(route, restaurant) =>
+            navigation.navigate(route, restaurant)
+          }
+        />
+      )}
       <RestaurantList
         data={restaurants}
         renderItem={({ item }) => {
           return (
-            <Spacer position="bottom" size="large">
-              <RestaurantInfoCard restaurant={item} />
-            </Spacer>
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate('RestaurantDetail', {
+                  restaurant: item,
+                })
+              }
+            >
+              <Spacer position="bottom" size="large">
+                <RestaurantInfoCard restaurant={item} />
+              </Spacer>
+            </TouchableOpacity>
           );
         }}
         keyExtractor={(item) => item.name}
